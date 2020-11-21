@@ -47,55 +47,71 @@ class FetchSite:
         if url:
             soup = BeautifulSoup(self.__response(url).text, 'html.parser')
         else:
-            soup = BeautifulSoup(self.__response().text, 'html.parser')
+            soup = BeautifulSoup(self.__response('').text, 'html.parser')
         avaliableLang = self.__avaliableLang()
-        findInSoup = soup.find('div', class_="dictionary")
-        words = findInSoup.findAll('div', class_='ditem')
+        searchElement = 'div'
+        containerClass = 'dictionary'
+        wordContainerCLass = 'ditem'
+        container = soup.find(searchElement, class_=containerClass)
+        words = container.findAll(searchElement, class_=wordContainerCLass)
 
         if (lang not in avaliableLang):
             print('Wybrałeś nie poprawny język')
 
         else:
+            paragraph = 'p'
+            paragraphClass = 'tr'
             for word in words:
                 if (lang == avaliableLang[0]):
-                    print(self.__soupFind(word, 'p', 'tr').text)
+                    print(self.__soupFind(word, paragraph, paragraphClass).text)
 
                 if (lang == avaliableLang[1]):
-                    finedWord = word.find('p').text
-                    elementLenght = int(len(finedWord) / 2)
-                    print(word.find('p').text[0: elementLenght])
+                    finedWord = word.find(paragraph).text
+                    elementHalfLenght = int(len(finedWord) / 2)
+                    print(word.find(paragraph).text[0: elementHalfLenght])
 
     def saveScrappedDictionary(self, url):
-        if url:
-            soup = BeautifulSoup(self.__response(url).text, 'html.parser')
-        else:
-            soup = BeautifulSoup(self.__response().text, 'html.parser')
+        parserType = 'html.parser'
+        searchElement = 'div'
+        containerClass = 'dictionary'
+        wordContainerClass = 'ditem'
+        paragraph = 'p'
+        paragraphClass = 'tr'
 
-        findInSoup = soup.find('div', class_="dictionary")
-        words = findInSoup.findAll('div', class_='ditem')
+        if url:
+            soup = BeautifulSoup(self.__response(url).text, parserType)
+        else:
+            soup = BeautifulSoup(self.__response().text, parserType)
+
+        container = soup.find(searchElement, class_=containerClass)
+        words = container.findAll(searchElement, class_=wordContainerClass)
         polishWords = []
         englishWords = []
 
         for word in words:
-            finedWord = word.find('p').text
+            finedWord = word.find(paragraph).text
             elementLenght = int(len(finedWord) / 2)
-            polishWords.append(self.__soupFind(word, 'p', 'tr').text)
-            englishWords.append(word.find('p').text[0: elementLenght])
+            polishWords.append(self.__soupFind(word, paragraph, paragraphClass).text)
+            englishWords.append(word.find(paragraph).text[0: elementLenght])
 
         mergedList = self.__mergeList(englishWords, polishWords)
 
         return mergedList
 
     def saveListToFile(self, url, fileName):
+        fileExtension = '.txt'
+        writeType = 'a'
         if (url):
             list = self.saveScrappedDictionary(url)
         else:
             list = self.saveScrappedDictionary()
 
-        with open(fileName + '.txt', 'a') as fp:
+        with open(fileName + fileExtension, writeType) as fp:
             fp.write('\n'.join('{}: {}'.format(x[0], x[1]) for x in list))
 
     def saveMultipleListTofile(self, isPaginationEnable, paginationCount, fileName):
+        fileExtension = '.txt'
+        writeType = 'a'
         preparedLink = self.__crateSiteNames(isPaginationEnable, paginationCount)
         words = []
 
@@ -106,5 +122,5 @@ class FetchSite:
             print('nie jestem linkkiem')
 
         for item in words:
-            with open(fileName + '.txt', 'a') as fp:
+            with open(fileName + fileExtension, writeType) as fp:
                 fp.write('\n'.join('{}: {}'.format(x[0], x[1]) for x in item))
